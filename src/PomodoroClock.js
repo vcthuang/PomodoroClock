@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 // Redux
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import { setSession, setBreak } from './Redux/actions';
 
 class PomodoroClock extends Component {
   constructor (props) {
@@ -69,6 +70,8 @@ class PomodoroClock extends Component {
     });
     clearInterval(this.timer);
     this.timer = 0;
+    this.props.setSession(25);
+    this.props.setBreak(5);
   }
 
   countDown() {
@@ -137,6 +140,8 @@ class PomodoroClock extends Component {
 }
 
 PomodoroClock.propTypes = {
+  setSession: PropTypes.func.isRequired,
+  setBreak: PropTypes.func.isRequired,
   sessionLength: PropTypes.number.isRequired,
   breakLength: PropTypes.number.isRequired
 }
@@ -146,4 +151,4 @@ const mapStateToProps = (state) => ({
   breakLength: state.breakLength
 })
 
-export default connect (mapStateToProps, {})(PomodoroClock);
+export default connect (mapStateToProps, {setSession, setBreak})(PomodoroClock);

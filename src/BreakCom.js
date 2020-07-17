@@ -18,6 +18,12 @@ class BreakCom extends Component {
     this.props.setBreak(this.state.breakLength);
   }
 
+  componentWillReceiveProps(newProps) {
+    if (newProps.breakLength) {
+      this.setState({breakLength: newProps.breakLength});
+    }
+  }
+
   onIncreaseBreak(e) {
     if (this.state.breakLength < 5) {
       // update redux

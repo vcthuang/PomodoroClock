@@ -17,6 +17,12 @@ class SessionCom extends Component {
     this.props.setSession(this.state.sessionLength);
   }
 
+  componentWillReceiveProps(newProps) {
+    if (newProps.sessionLength) {
+      this.setState({sessionLength: newProps.sessionLength});
+    }
+  }
+
   onIncreaseSession(e) {
     if (this.state.sessionLength < 60) {
       // update redux
