@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, createRef } from 'react';
 
 // Redux
 import { connect } from 'react-redux';
@@ -10,13 +10,14 @@ class PomodoroClock extends Component {
     super (props);
     this.state = {
       runningSession: true,
-      play: true,
+      isRunning: false,
       time: {
         m: 25,
         s: 0
       },
       seconds: 1500 //25*60
     };
+    this.audioRef = createRef();
     this.timer = 0;
     this.startStop = this.startStop.bind(this);
     this.countDown = this.countDown.bind(this);
@@ -57,46 +58,63 @@ class PomodoroClock extends Component {
   }
 
   startStop() {
-    if (this.timer === 0 && this.state.seconds > 0) {
+    if (!this.state.isRunning) {
+      //if (this.timer === 0 && this.state.seconds > 0)
       this.timer = setInterval (this.countDown, 1000);
+      this.setState({isRunning: true});
+    } else {
+      this.setState({isRunning: false});
+      clearInterval(this.timer);
     }
   }
 
   reset() {
     this.setState({
       runningSession: true,
-      time: this.secondsToTime(this.props.sessionLength * 60),
-      seconds: this.props.sessionLength * 60
+      isRunning: false,
+      time:  {
+        m: 25,
+        s: 0
+      },
+      reset: true,
+      seconds: 1500
     });
     clearInterval(this.timer);
     this.timer = 0;
     this.props.setSession(25);
     this.props.setBreak(5);
+    this.audioRef.current.pause();
+    this.audioRef.current.currentTime = 0;
   }
 
   countDown() {
     let seconds = this.state.seconds - 1;
     this.setState({
       time: this.secondsToTime(seconds),
-      seconds: seconds
+      seconds: seconds,
+      reset: false
     });
 
-    if (seconds === 0) {
+    if (seconds < 0) {
       if (this.state.runningSession) {
         this.setState({
           runningSession : !this.state.runningSession,
           time: this.secondsToTime(this.props.breakLength * 60),
-          seconds: this.props.breakLength * 60
+          seconds: this.props.breakLength * 60,
+          reset: false
         });
       } else {
         this.setState({
           runningSession : !this.state.runningSession,
           time: this.secondsToTime(this.props.sessionLength * 60),
-          seconds: this.props.sessionLength * 60
+          seconds: this.props.sessionLength * 60,
+          reset: false
         });
       }
-      clearInterval(this.timer);
-      this.timer = 0;
+      //clearInterval(this.timer);
+      //this.timer = 0;
+    } else if (seconds === 0) {
+      this.audioRef.current.play();
     }
   }
 
@@ -134,6 +152,12 @@ class PomodoroClock extends Component {
         <h1 id="time-left" style={{color:"yellow"}}>{timeDisplay}</h1>
         <i className="fas fa-toggle-on pr-5" style={{color:"blue"}} id="start-stop" onClick={this.startStop}></i>
         <i className="fas fa-power-off pl-5" style={{color:"red"}}  id="reset" onClick={this.reset}></i>
+
+        <audio ref = {this.audioRef}
+          id = "beep"
+          src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/3/success.mp3"
+        >
+        </audio>
       </div>
     )
   }
